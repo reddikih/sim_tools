@@ -1,4 +1,4 @@
-# This script calculate the summary the access performance of individual disks.
+# This script calculate the summary of the access performance of individual disks.
 # 
 # Usage:
 #     awk -f <thisscript> CacheDiskPerf.out(DataDiskPerf.out) | sort
