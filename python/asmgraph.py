@@ -6,11 +6,11 @@ import re
 
 import numpy as np
 import matplotlib as mpl
+if 'darwin' != sys.platform:
+    mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-
-if 'darwin' != sys.platform:
-    mpl.use('AGG')
 
 '''
 Parameter names of filter are follows
