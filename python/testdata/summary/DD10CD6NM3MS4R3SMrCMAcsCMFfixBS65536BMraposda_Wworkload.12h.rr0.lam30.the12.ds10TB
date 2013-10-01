@@ -1,0 +1,42 @@
+=========================================
+Storage Simulator Version 2.
+Starting time at: Wed Jul 31 12:06:18 JST 2013
+=========================================
+Data disks               = 30 (10disks/memory)
+Cache disks              = 6
+Replicas                 = 3
+Number of cache memories = 3
+Memory size(1 unit)      = 4,294,967,296Byte
+Block size               = 65,536Byte
+CacheMemoryAssignor   = cs
+CacheMemoryFactory    = sim.storage.manager.cmm.FixedRegionSizeCacheMemoryFactory
+StorageManagerFactory = sim.storage.manager.RAPoSDAStorageManagerFactory
+BufferManagerFactory  = sim.storage.manager.buffer.RAPoSDABufferManagerFactory
+Workload              = config/workload/workload.12h.rr0.lam30.the12.ds10TB
+------------------
+Simulation Time: 43246.559
+Total Energy(totaltime : avg time): 5,251,585.5678
+  ACTIVE   : 3,368,443.9934(303,463.4229 : 0.0103)
+  IDLE     : 907,474.1081(120,996.5478 : 15.7630)
+  STANDBY  : 890,932.4663(1,113,665.5829 : 909.1148)
+  SPINDOWN : 42,875.0000(857.5000 : 0.7000)
+  SPINUP   : 41,860.0000(17,940.0000 : 15.0000)
+Avg. Response Time: 0.202667
+Total Request count  : 1,296,000
+  Read Request count : 0(0)
+  Write Request count: 1,296,000(20,736,000)
+Cache memory read count (hit ratio): 0(0.0000)
+Cache memory write count(hit ratio): 62,208,000(0.9999)
+Avg. data disk response time : 56.068999
+data disk access count         : 14,698,292
+  data disk read access count  : 0
+  data disk write access count : 14,698,292
+Avg. cache disk response time: 24.528567
+cache disk access count(actual)         : 14,698,292(14,698,292)
+  cache disk read access count(hit ratio) : 0(0.0000)
+  cache disk write access count(hit ratio): 14,698,292(1.0000)
+Spindown count: 1,225
+Spinup   count: 1,196
+Buffer overflow count: 3,216
+End time at: Wed Jul 31 12:31:44 JST 2013
+Elapsed Time: 1,526[s]

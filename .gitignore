@@ -1,1 +1,5 @@
-*~
+python/.DS_Store
+*.pyc
+python/out
+python/outfig/
+python/ref
