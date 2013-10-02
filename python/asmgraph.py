@@ -64,6 +64,7 @@ _input_dir = '.'
 _output_dir = None
 _conditions = {} # conditions of workload characteristics
 _sim_results = {}
+_file_formats = ['eps', 'png']
 
 class SimResult:
 
@@ -189,14 +190,14 @@ class Energy:
         self._TOTALTIME_PREFIX = '_totaltime'
         self._AVERAGETIME_PREFIX = '_averagetime'
 
-        self.getenergyvalue(self._attrnames[0], f.readline().lower().strip())
-        self.getenergyvalue(self._attrnames[1], f.readline().lower().strip())
-        self.getenergyvalue(self._attrnames[2], f.readline().lower().strip())
-        self.getenergyvalue(self._attrnames[3], f.readline().lower().strip())
-        self.getenergyvalue(self._attrnames[4], f.readline().lower().strip())
+        self.get_energy_value(self._attrnames[0], f.readline().lower().strip())
+        self.get_energy_value(self._attrnames[1], f.readline().lower().strip())
+        self.get_energy_value(self._attrnames[2], f.readline().lower().strip())
+        self.get_energy_value(self._attrnames[3], f.readline().lower().strip())
+        self.get_energy_value(self._attrnames[4], f.readline().lower().strip())
 
 
-    def getenergyvalue(self, attrname, line):
+    def get_energy_value(self, attrname, line):
         tmpl = line.split(':')[1].strip().split('(')
         setattr(self, attrname + self._ENERGY_PREFIX, tmpl[0].replace(',',''))
         setattr(self, attrname + self._TOTALTIME_PREFIX, tmpl[1].replace(',',''))
@@ -289,9 +290,13 @@ def plot_energy():
         borderaxespad=0.0,
         loc='upper left',
     )
+
+        
+    # set x ticks to the scientific notation
+    plt.gca().ticklabel_format(style="sci", scilimits=(0,0), axis="y")
     
     # plt.show()
-    save_figure(plt, 'energy.eps', _output_dir)
+    save_figure(plt, 'energy', _output_dir)
 
 
 
@@ -335,7 +340,7 @@ def plot_response():
     )
     
     # plt.show()
-    save_figure(plt, 'avg_response.eps', _output_dir)
+    save_figure(plt, 'avg_response', _output_dir)
 
 
 def plot_overflow():
@@ -377,7 +382,7 @@ def plot_overflow():
     )
     
     # plt.show()
-    save_figure(plt, 'overflow.eps', _output_dir)
+    save_figure(plt, 'overflow', _output_dir)
 
 
 def plot_spin():
@@ -430,7 +435,7 @@ def plot_spin():
     )
      
     # plt.show()
-    save_figure(plt, 'spindownup.eps', _output_dir)
+    save_figure(plt, 'spindownup', _output_dir)
 
 
 def plot_hit():
@@ -480,7 +485,7 @@ def plot_hit():
     )
      
     # plt.show()
-    save_figure(plt, 'cache_hit.eps', _output_dir)
+    save_figure(plt, 'cache_hit', _output_dir)
 
 
 def plot_statetime():
@@ -518,7 +523,7 @@ def plot_statetime():
     ax_spinup = plt.bar(ind + 4 * width, spinup_t, width, color='m')
 
     # labels setting
-    plt.ylabel('Total Time of Each State', size=14)
+    plt.ylabel('Total Time of Each State  [s]', size=14)
     plt.xticks(ind + 5 * width / 2, x_ticks, size=14)
     plt.yticks(size=14)
 
@@ -537,9 +542,12 @@ def plot_statetime():
         bbox_to_anchor=(0.85, 1),
         loc='upper left',
     )
+
+    # set x ticks to the scientific notation
+    plt.gca().ticklabel_format(style="sci", scilimits=(0,0), axis="y")
      
     # plt.show()
-    save_figure(plt, 'state_time.eps', _output_dir)
+    save_figure(plt, 'state_time', _output_dir)
 
 
 def save_figure(plt, name, parent='.'):
@@ -549,7 +557,8 @@ def save_figure(plt, name, parent='.'):
     if not os.path.exists(parent):
         os.mkdir(parent)
     path = os.path.join(parent, name)
-    plt.savefig(path)
+    for sufix in _file_formats:
+        plt.savefig(path + '.' + sufix)
 
 
 def sort_sim_results(sim_results):
@@ -585,8 +594,8 @@ Usage:
 
 python %s -G[energy] [,response] [,overflow] [,spin] [,hit] [,statetime] \
 -D<dir>  -O<dir> \
--CONDNM=n,R=n,SM=[r, n],CMA=[dga, cs],CMF=[fix, share, simple],BM=[raposda, withallspins, spinupee],\
-WL=h:n_rr:n
+-CONDNM=n,R=n,SM=[r|n],CMA=[dga|cs],CMF=[fix|share|simple],BM=[raposda|withallspins|spinupee],\
+WL=h:n_rr:n -NP
 ''' % command_name
 
 
@@ -609,6 +618,7 @@ def parse_command_line(args):
     global _to_plot_list
     global _input_dir
     global _output_dir
+    global _file_formats
 
     _to_plot_list = []
 
@@ -624,6 +634,8 @@ def parse_command_line(args):
             _output_dir = item[2:]
         elif item.startswith('-COND'):
             parse_conditions(item[5:])
+        elif item.startswith('-NP'):
+            _file_formats.remove('png')
 
 def parse_conditions(conditions):
     global _conditions
