@@ -583,7 +583,7 @@ def print_usage(command_name):
     print '''
 Usage:
 
-python %s -G[energy] [,response] [,overflow] [,spinupdown] [,cachehit] [,statetime] \
+python %s -G[energy] [,response] [,overflow] [,spin] [,hit] [,statetime] \
 -D<dir>  -O<dir> \
 -CONDNM=n,R=n,SM=[r, n],CMA=[dga, cs],CMF=[fix, share, simple],BM=[raposda, withallspins, spinupee],\
 WL=h:n_rr:n
