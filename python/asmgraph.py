@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import logging
 
 import numpy as np
 import matplotlib as mpl
@@ -11,6 +12,8 @@ if 'darwin' != sys.platform:
 
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+
+logging.basicConfig(level=logging.INFO)
 
 '''
 Parameter names of filter are follows
@@ -30,7 +33,7 @@ wl_lambda
 wl_zipf_factor
 wl_data_size
 '''
-path_filter = re.compile(r'^DD(?P<num_dd>\d+)CD(?P<num_cd>\d+)NM(?P<num_mem>\d+)MS(?P<mem_size>\d+)R(?P<rep_level>\d+)SM(?P<storage_manager>[a-zA-Z])CMA(?P<mem_assignor>[a-zA-Z]+)CMF(?P<memory_manager>[a-zA-Z]+)BS\d+BM(?P<buffer_manager>[a-zA-Z]+)_Wworkload\.(?P<wl_hour>\d+)h\.rr(?P<wl_read_ratio>\d)\.lam(?P<wl_lambda>\d+)\.the(?P<wl_zipf_factor>\d+)\.ds(?P<wl_data_size>\d+)[KMGT]B$')
+path_filter = re.compile(r'^DD(?P<num_dd>\d+)CD(?P<num_cd>\d+)NM(?P<num_mem>\d+)MS(?P<mem_size>\d+)R(?P<rep_level>\d+)SM(?P<storage_manager>[a-zA-Z]+)CMA(?P<mem_assignor>[a-zA-Z]+)CMF(?P<memory_manager>[a-zA-Z]+)BS\d+BM(?P<buffer_manager>[a-zA-Z]+)_Wworkload\.(?P<wl_hour>\d+)h\.rr(?P<wl_read_ratio>\d)\.lam(?P<wl_lambda>\d+)\.the(?P<wl_zipf_factor>\d+)\.ds(?P<wl_data_size>\d+)[KMGT]B$')
 
 _PLOT_TYPE = ('energy', 'response', 'overflow', 'spin', 'hit', 'statetime')
 
@@ -49,6 +52,7 @@ _CONDITION_TRANSLATE_TABLE = {
 _BUFFER_MANGER_TYPE = {
     'normal': 'Normal',
     'raposda': 'Chunk', 
+    'chunk': 'Chunk', 
     'flushtoallspinningdisk': 'WithAllSpins',
     'spinupenergyefficientdisks': 'SpinupEE',
 }
@@ -170,7 +174,13 @@ class SimResult:
         l = f.readline().split(':')[1].strip().replace(',','').replace(')','')
         self.cache_disk_write_count = l.split('(')[0]
 
-
+    def get_workload_param_text(self):
+        return (
+            "Hour:%d, ReadRatio:%.1f, DataSize:%s" % 
+            (int(self.workload.hour),
+             float(self.workload.readratio) / 10,
+             self.workload.datasize.upper()
+             ))
                 
 
 class WorkloadParam:
@@ -272,13 +282,16 @@ def plot_energy():
 
     # labels setting
     plt.ylabel('Energy Consumption [joule]', size=14)
+    plt.yticks(size=16)
     plt.xticks(ind + width / 2, x_ticks)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
 
@@ -293,7 +306,7 @@ def plot_energy():
 
         
     # set x ticks to the scientific notation
-    plt.gca().ticklabel_format(style="sci", scilimits=(0,0), axis="y")
+    plt.gca().ticklabel_format(style="sci", scilimits=(0,0), axis="y", size=16)
     
     # plt.show()
     save_figure(plt, 'energy', _output_dir)
@@ -329,13 +342,16 @@ def plot_response():
 
     # labels setting
     plt.ylabel('Avg. Response Time [s]', size=14)
+    plt.yticks(size=16)
     plt.xticks(ind + width / 2, x_ticks)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
     
@@ -371,13 +387,16 @@ def plot_overflow():
 
     # labels setting
     plt.ylabel('Overflow Count', size=14)
+    plt.yticks(size=16)
     plt.xticks(ind + width / 2, x_ticks)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
     
@@ -416,13 +435,16 @@ def plot_spin():
     
     # labels setting
     plt.ylabel('Spinup/down Count', size=14)
+    plt.yticks(size=16)
     plt.xticks(ind + 2 * width / 2, x_ticks)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
 
@@ -466,13 +488,15 @@ def plot_hit():
     # labels setting
     plt.ylabel('Cache Hit Ratio', size=14)
     plt.xticks(ind + 2 * width / 2, x_ticks, size=14)
-    plt.yticks(np.arange(0, 1.01, 0.25), size=14)
+    plt.yticks(np.arange(0, 1.01, 0.25), size=16)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
 
@@ -525,13 +549,15 @@ def plot_statetime():
     # labels setting
     plt.ylabel('Total Time of Each State  [s]', size=14)
     plt.xticks(ind + 5 * width / 2, x_ticks, size=14)
-    plt.yticks(size=14)
+    plt.yticks(size=16)
 
     # title setting
-    plt.title('Replevel=%s, CMA=%s, CMF=%s'
+    plt.title('Replevel=%s, CMA=%s, CMF=%s\n%s'
               % (_sim_results.values()[0].replicalevel, 
                  _sim_results.values()[0].memoryassignor,
-                 _sim_results.values()[0].memoryfactory),
+                 _sim_results.values()[0].memoryfactory,
+                 _sim_results.values()[0].get_workload_param_text()
+                 ),
               size=16
     )
 
@@ -608,7 +634,6 @@ def test_condition(path):
         regex_dict = regex_ret.groupdict()
         for k, v in _conditions.iteritems():
             if (not (k in regex_dict)) or (regex_dict[k] != v):
-                # print "false condition: k=", k, "v=", v
                 condition = False
                 break
     return condition
@@ -625,7 +650,7 @@ def parse_command_line(args):
     for item in args:
         if item.startswith('-G'):
             for plot in item[2:].split(','):
-                print 'plotargs=', plot
+                logging.info('plotargs='+ plot)
                 if plot in _PLOT_TYPE:
                     _to_plot_list.append(plot)
         elif item.startswith('-D'):
@@ -641,7 +666,10 @@ def parse_conditions(conditions):
     global _conditions
     l = []
 
-    for kv in conditions[5:].split(','):
+    logging.debug("conditions: " + conditions)
+
+    for kv in conditions.split(','):
+        logging.debug("checking condition: %s" % kv)
         if kv.startswith('WL'):
             k, v = kv.split('=')
             k = k.lower() + '_'
@@ -653,7 +681,9 @@ def parse_conditions(conditions):
             k, v = kv.split('=')
             k = _CONDITION_TRANSLATE_TABLE[k]
             l.append((k,v))
+            logging.debug("appended condition: key=%s, val=%s" % (k,v))
     _conditions = dict(l)
+    logging.debug(_conditions)
 
     
 def main():
@@ -662,7 +692,7 @@ def main():
     for path in generate_file_paths(_input_dir):
         # print 'scan', path
         if (test_condition(path)):
-            print path, 'is passes filter'
+            logging.info(path + 'is passes filter')
             obj = SimResult(path)
             _sim_results[os.path.basename(obj.path)] = obj
 
